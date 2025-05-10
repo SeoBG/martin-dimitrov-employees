@@ -7,6 +7,7 @@ interface Props {
   pairs: PairProject[];
 }
 
+// Component that displays the employee pair data in a table format
 const EmployeeTable: React.FC<Props> = ({ pairs }) => {
   return (
     <ScrollView>
@@ -18,6 +19,7 @@ const EmployeeTable: React.FC<Props> = ({ pairs }) => {
               <DataTable.Title style={styles.cell}><Text style={styles.headerText}>Days worked</Text></DataTable.Title>
             </DataTable.Header>
 
+            {/* Render each pair of employees as a table row */}
             {pairs.map((item, index) => (
               <DataTable.Row key={index} style={styles.row}>
                 <DataTable.Cell style={styles.cellCenter}>{item.emp1}</DataTable.Cell>
@@ -31,6 +33,7 @@ const EmployeeTable: React.FC<Props> = ({ pairs }) => {
   );
 };
 
+// Define component styles
 const styles = StyleSheet.create({
   header: { backgroundColor: '#ccc', borderWidth: 1, borderColor: '#000' },
   headerText: { fontWeight: 'bold', fontSize: 10, color: '#000' },

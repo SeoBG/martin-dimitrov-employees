@@ -12,3 +12,15 @@ React Native app to identify the pair of employees who worked together the longe
 ## How to run
 
 1. Install dependencies:
+
+npm install
+
+2. Start Expo:
+
+npx expo start
+
+3. Pick CSV file from the app and view results.
+
+## Author
+
+Martin Dimitrov
