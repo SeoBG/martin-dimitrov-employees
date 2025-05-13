@@ -1,39 +1,54 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import Papa from 'papaparse';
+import React, { useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import { Provider as PaperProvider } from 'react-native-paper';
+import EmployeeTable from '../../components/EmployeeTable';
+import { EmployeeRecord, findEmployeePairs, PairProject } from '../../utils/employeeUtils';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+export default function HomeScreen() {
+  const [pairs, setPairs] = useState<PairProject[]>([]);
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const handlePickFile = async () => {
+    try {
+      const res = await DocumentPicker.getDocumentAsync({ type: 'text/csv' });
+      if (res.canceled) return;
+
+      const fileUri = res.assets[0].uri;
+      const response = await fetch(fileUri);
+      const csvText = await response.text();
+
+      const parsed = Papa.parse<EmployeeRecord>(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: true,
+      });
+
+      const employeePairs = findEmployeePairs(parsed.data);
+      setPairs(employeePairs);
+    } catch (err) {
+      console.error('Error picking or parsing file:', err);
+    }
+  };
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-    
-    </Tabs>
+    <PaperProvider>
+      <View style={styles.container}>
+        <Button title="Pick CSV File" onPress={handlePickFile} />
+        {pairs.length === 0 ? (
+          <View style={styles.textContainer}>
+            <Text style={styles.text}>No data loaded.</Text>
+          </View>
+        ) : (
+          <EmployeeTable pairs={pairs} />
+        )}
+      </View>
+    </PaperProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, marginTop: 50 },
+  textContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  text: { marginTop: 20, fontSize: 16 },
+});
